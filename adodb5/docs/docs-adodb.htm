@@ -620,7 +620,7 @@ ul
 
 <h2>ADOdb Library for PHP</h2>
 
-<p>V5.06 16 Oct 2008 (c) 2000-2008 John Lim (jlim#natsoft.com)</p>
+<p>V5.06 16 Oct 2008 (c) 2000-2009 John Lim (jlim#natsoft.com)</p>
 
 <p><span style='font-size:7.5pt'>This software is dual licensed using BSD-Style
 and LGPL. This means you can use it in compiled proprietary and commercial
@@ -995,8 +995,16 @@ style='mso-tab-count:1'>         </span></pre><pre><span style='mso-tab-count:
 1'>         </span><span style='color:green'># no need to call connect/pconnect!</span></pre><pre><span
 style='mso-tab-count:1'>         </span>$arr = $db-&gt;GetArray(&quot;select * from table&quot;);</pre><pre><span
 style='mso-tab-count:1'>         </span></pre><pre><span style='mso-tab-count:
-1'>         </span><span style='color:green'># persistent connection</span></pre><pre><span
-style='mso-tab-count:1'>         </span>$dsn2 = 'mysql://root:pwd@localhost/mydb?persist'; </pre></div>
+1'>         </span><span style='color:green'># persistent connection</span></pre>
+<pre><span
+style='mso-tab-count:1'>         </span>$dsn2 = 'mysql://root:pwd@localhost/mydb?persist'; 
+<span
+style='mso-tab-count:1'></span></pre>
+<pre><span style='mso-tab-count:
+1'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span style='color:green'># non-persistent connection on port 3000</span></pre>
+<pre><span
+style='mso-tab-count:1'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>$dsn2 = 'mysqli://root:pwd@localhost/mydb?persist=0&amp;port=3000';</pre>
+</div>
 
 <p>If you have special characters such as /:?_ in your dsn, then you need to
 rawurlencode them first: </p>
@@ -3438,7 +3446,7 @@ Example below: </span></p>
 <div style='mso-element:para-border-div;border:solid #DDDDDD 1.0pt;mso-border-alt:
 solid #DDDDDD .75pt;padding:9.0pt 18.0pt 9.0pt 18.0pt;background:#EEEEEE'><pre><span
 style='mso-bookmark:memcache'><o:p>&nbsp;</o:p></span></pre><pre><span
-style='mso-bookmark:memcache'>$db = NewADOConnection($driver);</span></pre><pre><span
+style='mso-bookmark:memcache'>$db = NewADOConnection($driver='mysql');</span></pre><pre><span
 style='mso-bookmark:memcache'>$db-&gt;memCache = true;</span></pre><pre><span
 style='mso-bookmark:memcache'>$db-&gt;memCacheHost = array($ip1, $ip2, $ip3); /// $db-&gt;memCacheHost = $ip1; will work too</span></pre><pre><span
 style='mso-bookmark:memcache'>$db-&gt;memCachePort = 11211; /// this is default memCache port</span></pre><pre><span
@@ -6081,7 +6089,25 @@ PHP</a>. </p>
 
 <h2>Change Log<a name=changes></a><a name=changelog></a></h2>
 
-<p><a name=5.07></a><b>5.07 ? Dec 2008</b> </p>
+<p><a name=5.08></a><b>5.08 ? 2009</b> </p>
+<p>adodb-sybase.inc.php driver. Added $conn->charSet support. Thx Luis Henrique Mulinari (luis.mulinari#gmail.com)
+<p>adodb-ado5.inc.php. Fixed some bind param issues. Thx Jirka Novak. 
+<p>adodb-ado5.inc.php. Now has improved error handling.
+<p>Fixed typo in adodb-xmlschema03.inc.php. See XMLS_EXISTING_DATA, line 1501. Thx james johnson.
+<p>Made $inputarr optional for _query() in all drivers.
+<p>Fixed spelling mistake in flushall() in adodb.inc.ophp.
+<p>Fixed handling of quotes in adodb_active_record::doquote. Thx Jonathan Hohle (jhohle#godaddy.com).
+<p>Added new index parameter to adodb_active_record::setdatabaseadaptor. Thx Jonathan Hohle
+<p>Fixed & readcache() reference compat problem with php 5.3 in adodb.Thx Jonathan Hohle.
+<p>Some minor $ADODB_CACHE_CLASS definition issues in adodb.inc.php.
+<p>Added Reset() function to adodb_active_record. Thx marcus.
+<p>Minor dsn fix for pdo_sqlite in adodb.inc.php. Thx Sergey Chvalyuk.
+<p>Fixed adodb-datadict _CreateSuffix() inconsistencies. Thx Chris Miller.
+<p>Option to delete old fields $dropOldFlds in datadict ChangeTableSQL($table, $flds, $tableOptions, $dropOldFlds=false) added. Thx  Philipp Niethammer.
+<p>Memcache caching did not expire properly. Fixed.
+<p>MetaForeignKeys for postgres7 driver changed from adodb_movenext to $rs->MoveNext (also in 4.99)
+<p>Added support for ldap and ldaps url format in ldap driver.
+<p><a name=5.07></a><b>5.07 26 Dec 2008</b> </p>
 
 <p>BeginTrans/CommitTrans/RollbackTrans return true/false correctly on
 success/failure now for mssql, odbc, oci8, mysqlt, mysqli, postgres, pdo. </p>
@@ -6127,7 +6153,7 @@ default ADODB_Active_Record. Thx Arialdo Martini &amp; Chris R for idea. </p>
 <p>The rs2html function did not display hours in timestamps correctly. Now 24hr
 clock used.</p>
 
-<p>Changed ereg* functions to use preg* functions as ereg* is deprecated in PHP 5.3.</p>
+<p>Changed ereg* functions to use preg* functions as ereg* is deprecated in PHP 5.3. Modified sybase and postgresql drivers.</p>
 
 <p><a name=5.06></a><b>5.06 16 Oct 2008</b> </p>
 
