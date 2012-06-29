@@ -1569,7 +1569,7 @@
             $dir = $ADODB_CACHE_DIR;
             
          if ($this->debug) {
-            ADOConnection::outp( "CacheFlush: $dir<br><pre>\n", $this->_dirFlush($dir),"</pre>");
+            ADOConnection::outp( "CacheFlush: $dir<br><pre>\n". $this->_dirFlush($dir)."</pre>");
          } else {
             $this->_dirFlush($dir);
          }
@@ -1591,23 +1591,24 @@
    *
    * Just specify the directory, and tell it if you want to delete the directory or just clear it out.
    * Note: $kill_top_level is used internally in the function to flush subdirectories.
+   *
    */
-   function _dirFlush($dir, $kill_top_level = false) {
+   function _dirFlush($dir, $kill_top_level = false) 
+   {
       if(!$dh = @opendir($dir)) return;
       
       while (($obj = readdir($dh))) {
-         if($obj=='.' || $obj=='..')
-            continue;
-			
-         if (!@unlink($dir.'/'.$obj))
-			  $this->_dirFlush($dir.'/'.$obj, true);
+         if($obj=='.' || $obj=='..') continue;
+		$f = $dir.'/'.$obj;
+		
+		if (strpos($obj,'.cache')) @unlink($f);
+		if (is_dir($f)) $this->_dirFlush($f, true);
       }
-      if ($kill_top_level === true)
-         @rmdir($dir);
+      if ($kill_top_level === true) @rmdir($dir);
       return true;
    }
    
-   
+    // this only deletes .cache files
 	function xCacheFlush($sql=false,$inputarr=false)
 	{
 	global $ADODB_CACHE_DIR;
@@ -2667,10 +2668,54 @@ http://www.stanford.edu/dept/itss/docs/oracle/10g/server.101/b10759/statements_1
 	// CLASS ADORecordSet_empty
 	//==============================================================================================	
 	
+	class ADODB_Iterator_empty implements Iterator {
+	
+	    private $rs;
+	
+	    function __construct($rs) 
+		{
+	        $this->rs = $rs;
+	    }
+	    function rewind() 
+		{
+	    }
+	
+		function valid() 
+		{
+	        return !$this->rs->EOF;
+	    }
+		
+	    function key() 
+		{
+	        return $false;
+	    }
+		
+	    function current() 
+		{
+	        return $false;
+	    }
+		
+	    function next() 
+		{
+	    }
+		
+		function __call($func, $params)
+		{
+			return call_user_func_array(array($this->rs, $func), $params);
+		}
+		
+		function hasMore()
+		{
+			return false;
+		}
+	
+	}
+
+	
 	/**
 	* Lightweight recordset when there are no records to be returned
 	*/
-	class ADORecordSet_empty
+	class ADORecordSet_empty implements IteratorAggregate
 	{
 		var $dataProvider = 'empty';
 		var $databaseType = false;
@@ -2685,6 +2730,7 @@ http://www.stanford.edu/dept/itss/docs/oracle/10g/server.101/b10759/statements_1
 		function FetchRow() {return false;}
 		function FieldCount(){ return 0;}
 		function Init() {}
+		function getIterator() {return new ADODB_Iterator_empty($this);}
 	}
 	
 	//==============================================================================================	
@@ -2696,14 +2742,61 @@ http://www.stanford.edu/dept/itss/docs/oracle/10g/server.101/b10759/statements_1
 	// CLASS ADORecordSet
 	//==============================================================================================	
 
-	include_once(ADODB_DIR.'/adodb-iterator.inc.php');
+	class ADODB_Iterator implements Iterator {
+	
+	    private $rs;
+	
+	    function __construct($rs) 
+		{
+	        $this->rs = $rs;
+	    }
+	    function rewind() 
+		{
+	        $this->rs->MoveFirst();
+	    }
+	
+		function valid() 
+		{
+	        return !$this->rs->EOF;
+	    }
+		
+	    function key() 
+		{
+	        return $this->rs->_currentRow;
+	    }
+		
+	    function current() 
+		{
+	        return $this->rs->fields;
+	    }
+		
+	    function next() 
+		{
+	        $this->rs->MoveNext();
+	    }
+		
+		function __call($func, $params)
+		{
+			return call_user_func_array(array($this->rs, $func), $params);
+		}
+	
+		
+		function hasMore()
+		{
+			return !$this->rs->EOF;
+		}
+	
+	}
+
+
+
    /**
 	 * RecordSet class that represents the dataset returned by the database.
 	 * To keep memory overhead low, this class holds only the current row in memory.
 	 * No prefetching of data is done, so the RecordCount() can return -1 ( which
 	 * means recordcount not known).
 	 */
-	class ADORecordSet extends ADODB_BASE_RS {
+	class ADORecordSet implements IteratorAggregate {
 	/*
 	 * public variables	
 	 */
@@ -2753,6 +2846,17 @@ http://www.stanford.edu/dept/itss/docs/oracle/10g/server.101/b10759/statements_1
 		$this->_queryID = $queryID;
 	}
 	
+	function getIterator() 
+	{
+        return new ADODB_Iterator($this);
+    }
+	
+	/* this is experimental - i don't really know what to return... */
+	function __toString()
+	{
+		include_once(ADODB_DIR.'/toexport.inc.php');
+		return _adodb_export($this,',',',',false,true);
+	}
 	
 	
 	function Init()
