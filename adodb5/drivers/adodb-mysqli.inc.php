@@ -1,6 +1,6 @@
 <?php
 /*
-V5.02 24 Sept 2007   (c) 2000-2007 John Lim (jlim#natsoft.com.my). All rights reserved.
+V5.03 22 Jan 2008   (c) 2000-2008 John Lim (jlim#natsoft.com.my). All rights reserved.
   Released under both BSD license and Lesser GPL library license. 
   Whenever there is any discrepancy between the two licenses, 
   the BSD license will take precedence.
@@ -114,6 +114,7 @@ class ADODB_mysqli extends ADOConnection {
  	   } else {
 			if ($this->debug) 
 		  		ADOConnection::outp("Could't connect : "  . $this->ErrorMsg());
+			$this->_connectionID = null;
 			return false;
 	   }
 	}
@@ -612,16 +613,15 @@ class ADODB_mysqli extends ADOConnection {
 			      $nrows = -1,
 			      $offset = -1,
 			      $inputarr = false, 
-			      $arg3 = false,
 			      $secs = 0)
 	{
 		$offsetStr = ($offset >= 0) ? "$offset," : '';
 		if ($nrows < 0) $nrows = '18446744073709551615';
 		
 		if ($secs)
-			$rs = $this->CacheExecute($secs, $sql . " LIMIT $offsetStr$nrows" , $inputarr , $arg3);
+			$rs = $this->CacheExecute($secs, $sql . " LIMIT $offsetStr$nrows" , $inputarr );
 		else
-			$rs = $this->Execute($sql . " LIMIT $offsetStr$nrows" , $inputarr , $arg3);
+			$rs = $this->Execute($sql . " LIMIT $offsetStr$nrows" , $inputarr );
 			
 		return $rs;
 	}
