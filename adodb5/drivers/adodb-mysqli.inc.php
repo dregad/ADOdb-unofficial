@@ -1,6 +1,6 @@
 <?php
 /*
-V5.03 22 Jan 2008   (c) 2000-2008 John Lim (jlim#natsoft.com.my). All rights reserved.
+V5.04 13 Feb 2008   (c) 2000-2008 John Lim (jlim#natsoft.com.my). All rights reserved.
   Released under both BSD license and Lesser GPL library license. 
   Whenever there is any discrepancy between the two licenses, 
   the BSD license will take precedence.
@@ -945,7 +945,7 @@ class ADORecordSet_mysqli extends ADORecordSet{
 		 case 'SET': 
 		
 		case MYSQLI_TYPE_TINY_BLOB :
-		case MYSQLI_TYPE_CHAR :
+		#case MYSQLI_TYPE_CHAR :
 		case MYSQLI_TYPE_STRING :
 		case MYSQLI_TYPE_ENUM :
 		case MYSQLI_TYPE_SET :
@@ -1052,7 +1052,7 @@ class ADORecordSet_array_mysqli extends ADORecordSet_array {
 		 case 'SET': 
 		
 		case MYSQLI_TYPE_TINY_BLOB :
-		case MYSQLI_TYPE_CHAR :
+		#case MYSQLI_TYPE_CHAR :
 		case MYSQLI_TYPE_STRING :
 		case MYSQLI_TYPE_ENUM :
 		case MYSQLI_TYPE_SET :
