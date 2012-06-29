@@ -1,0 +1,14 @@
+ADOdb Database Abstraction Library
+==================================
+
+ADOdb is a database abstraction library for PHP and Python.
+
+Released under both BSD license and Lesser GPL library license.
+You can choose which license you prefer.
+
+(c) 2000-2012 John Lim (jlim@natsoft.com). All rights reserved.
+
+http://adodb.sourceforge.net/
+
+This is an unofficial repository of the php5 version.
+
