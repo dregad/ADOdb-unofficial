@@ -58,7 +58,7 @@ class ADODB_oci8 extends ADOConnection {
 	var $replaceQuote = "''"; // string to use to replace quotes
 	var $concat_operator='||';
 	var $sysDate = "TRUNC(SYSDATE)";
-	var $sysTimeStamp = 'SYSTIMESTAMP'; // requires oracle 9 or later, otherwise use SYSDATE
+	var $sysTimeStamp = 'SYSDATE'; // requires oracle 9 or later, otherwise use SYSDATE
 	var $metaDatabasesSQL = "SELECT USERNAME FROM ALL_USERS WHERE USERNAME NOT IN ('SYS','SYSTEM','DBSNMP','OUTLN') ORDER BY 1";
 	var $_stmt;
 	var $_commit = OCI_COMMIT_ON_SUCCESS;
@@ -298,12 +298,15 @@ NATSOFT.DOMAIN =
 		return substr($d,1,strlen($d)-2);
 	}
 	
-	function BindTimeStamp($d)
+	function BindTimeStamp($ts)
 	{
-		$d = ADOConnection::DBTimeStamp($d);
-		if (strncmp($d,"'",1)) return $d;
+		if (empty($ts) && $ts !== 0) return 'null';
+		if (is_string($ts)) $ts = ADORecordSet::UnixTimeStamp($ts);
 		
-		return substr($d,1,strlen($d)-2);
+		if (is_object($ts)) $tss = $ts->format("'Y-m-d H:i:s'");
+		else $tss = adodb_date("'Y-m-d H:i:s'",$ts);
+		
+		return $tss;
 	}
 	
 	// format and return date string in database timestamp format
