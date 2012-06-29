@@ -14,7 +14,7 @@
 /**
 	\mainpage
 	
-	 @version V5.14 8 Sept 2011   (c) 2000-2011 John Lim (jlim#natsoft.com). All rights reserved.
+	 @version V5.15 19 Jan 2012   (c) 2000-2012 John Lim (jlim#natsoft.com). All rights reserved.
 
 	Released under both BSD license and Lesser GPL library license. You can choose which license
 	you prefer.
@@ -177,7 +177,7 @@
 		/**
 		 * ADODB version as a string.
 		 */
-		$ADODB_vers = 'V5.14 8 Sept 2011  (c) 2000-2011 John Lim (jlim#natsoft.com). All rights reserved. Released BSD & LGPL.';
+		$ADODB_vers = 'V5.15 19 Jan 2012  (c) 2000-2012 John Lim (jlim#natsoft.com). All rights reserved. Released BSD & LGPL.';
 	
 		/**
 		 * Determines whether recordset->RecordCount() is used. 
@@ -215,6 +215,36 @@
 		var $default_value; // default, if any, and supported. Check has_default first.
 */
 	}
+	
+	
+	function _adodb_safedate($s)
+	{
+		return str_replace(array("'", '\\'), '', $s);
+	}
+
+	// parse date string to prevent injection attack
+	// date string will have one quote at beginning e.g. '3434343'
+	function _adodb_safedateq($s)
+	{
+		$len = strlen($s);
+		if ($s[0] !== "'") $s2 = "'";
+		else $s2 = "'";
+		for($i=1; $i<$len; $i++) {
+			$ch = $s[$i];
+			if ($ch === '\\') {
+				$s2 .= "'";
+				break;
+			} elseif ($ch === "'") {
+				$s2 .= $ch;
+				break;
+			}
+			
+			$s2 .= $ch;
+		}
+		
+		return $s2;
+	}
+
 	
 	// for transaction handling
 	
@@ -1596,7 +1626,8 @@
 	}
 	
 	/**
-	* Return one row of sql statement. Recordset is disposed for you.
+	* Return one row of sql statement. Recordset is disposed for you. 
+	* Note that SelectLimit should not be called.
 	*
 	* @param sql			SQL statement
 	* @param [inputarr]		input bind array
@@ -2448,7 +2479,11 @@ http://www.stanford.edu/dept/itss/docs/oracle/10g/server.101/b10759/statements_1
 		
 		
 		if (is_string($d) && !is_numeric($d)) {
-			if ($d === 'null' || strncmp($d,"'",1) === 0) return $d;
+			if ($d === 'null') return $d;
+			if (strncmp($d,"'",1) === 0) {
+				$d = _adodb_safedateq($d);
+				return $d;
+			}
 			if ($this->isoDates) return "'$d'";
 			$d = ADOConnection::UnixDate($d);
 		}
@@ -2491,8 +2526,10 @@ http://www.stanford.edu/dept/itss/docs/oracle/10g/server.101/b10759/statements_1
 			return adodb_date($this->fmtTimeStamp,$ts);
 		
 		if ($ts === 'null') return $ts;
-		if ($this->isoDates && strlen($ts) !== 14) return "'$ts'";
-		
+		if ($this->isoDates && strlen($ts) !== 14) {
+			$ts = _adodb_safedate($ts);
+			return "'$ts'";
+		}
 		$ts = ADOConnection::UnixTimeStamp($ts);
 		return adodb_date($this->fmtTimeStamp,$ts);
 	}
