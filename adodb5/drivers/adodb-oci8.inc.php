@@ -58,7 +58,7 @@ class ADODB_oci8 extends ADOConnection {
 	var $replaceQuote = "''"; // string to use to replace quotes
 	var $concat_operator='||';
 	var $sysDate = "TRUNC(SYSDATE)";
-	var $sysTimeStamp = 'SYSDATE';
+	var $sysTimeStamp = 'SYSTIMESTAMP'; // requires oracle 9 or later, otherwise use SYSDATE
 	var $metaDatabasesSQL = "SELECT USERNAME FROM ALL_USERS WHERE USERNAME NOT IN ('SYS','SYSTEM','DBSNMP','OUTLN') ORDER BY 1";
 	var $_stmt;
 	var $_commit = OCI_COMMIT_ON_SUCCESS;
@@ -96,8 +96,8 @@ class ADODB_oci8 extends ADOConnection {
 		if (defined('ADODB_EXTENSION')) $this->rsPrefix .= 'ext_';
 	}
 	
-	/*  function MetaColumns($table) added by smondino@users.sourceforge.net*/
-	function MetaColumns($table) 
+	/*  function MetaColumns($table, $normalize=true) added by smondino@users.sourceforge.net*/
+	function MetaColumns($table, $normalize=true) 
 	{
 	global $ADODB_FETCH_MODE;
 	
@@ -281,8 +281,13 @@ NATSOFT.DOMAIN =
 	{
 		if (empty($d) && $d !== 0) return 'null';
 		if ($isfld) return 'TO_DATE('.$d.",'".$this->dateformat."')";
+		
 		if (is_string($d)) $d = ADORecordSet::UnixDate($d);
-		return "TO_DATE(".adodb_date($this->fmtDate,$d).",'".$this->dateformat."')";
+		
+		if (is_object($d)) $ds = $d->format($this->fmtDate);
+		else $ds = adodb_date($this->fmtDate,$d);
+		
+		return "TO_DATE(".$ds.",'".$this->dateformat."')";
 	}
 
 	function BindDate($d)
@@ -307,7 +312,11 @@ NATSOFT.DOMAIN =
 		if (empty($ts) && $ts !== 0) return 'null';
 		if ($isfld) return 'TO_DATE(substr('.$ts.",1,19),'RRRR-MM-DD, HH24:MI:SS')";
 		if (is_string($ts)) $ts = ADORecordSet::UnixTimeStamp($ts);
-		return 'TO_DATE('.adodb_date("'Y-m-d H:i:s'",$ts).",'RRRR-MM-DD, HH24:MI:SS')";
+		
+		if (is_object($ts)) $tss = $ts->format("'Y-m-d H:i:s'");
+		else $tss = adodb_date("'Y-m-d H:i:s'",$ts);
+		
+		return 'TO_DATE('.$tss.",'RRRR-MM-DD, HH24:MI:SS')";
 	}
 	
 	function RowLock($tables,$where,$flds='1 as ignore') 
@@ -1283,12 +1292,14 @@ SELECT /*+ RULE */ distinct b.column_name
 			return  "'".str_replace("'",$this->replaceQuote,$s)."'";
 		}
 		
-		// undo magic quotes for "
-		$s = str_replace('\\"','"',$s);
-		
-		$s = str_replace('\\\\','\\',$s);
-		return "'".str_replace("\\'",$this->replaceQuote,$s)."'";
-		
+		// undo magic quotes for " unless sybase is on
+		if (!ini_get('magic_quotes_sybase')) {
+			$s = str_replace('\\"','"',$s);
+			$s = str_replace('\\\\','\\',$s);
+			return "'".str_replace("\\'",$this->replaceQuote,$s)."'";
+		} else {
+			return "'".$s."'";
+		}
 	}
 	
 }
@@ -1546,7 +1557,7 @@ class ADORecordset_oci8 extends ADORecordSet {
 		case 'NCHAR':
 		case 'NVARCHAR':
 		case 'NVARCHAR2':
-				 if (isset($this) && $len <= $this->blobSize) return 'C';
+				 if ($len <= $this->blobSize) return 'C';
 		
 		case 'NCLOB':
 		case 'LONG':
