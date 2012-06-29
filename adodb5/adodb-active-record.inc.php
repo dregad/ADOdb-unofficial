@@ -1,7 +1,7 @@
 <?php
 /*
 
-@version V5.00 05 Feb 2007   (c) 2000-2007 John Lim (jlim#natsoft.com.my). All rights reserved.
+@version V5.02 24 Sept 2007   (c) 2000-2007 John Lim (jlim#natsoft.com.my). All rights reserved.
   Latest version is available at http://adodb.sourceforge.net
  
   Released under both BSD license and Lesser GPL library license. 
@@ -10,7 +10,7 @@
   
   Active Record implementation. Superset of Zend Framework's.
   
-  Version 0.07
+  Version 0.08
   
   See http://www-128.ibm.com/developerworks/java/library/j-cb03076/?ca=dgr-lnxw01ActiveRecord 
   	for info on Ruby on Rails Active Record implementation
@@ -70,15 +70,9 @@ class ADODB_Active_Record {
 	var $_original = false; // the original values loaded or inserted, refreshed on update
 	
 	// should be static
-	function SetDatabaseAdapter(&$db) 
+	static function SetDatabaseAdapter(&$db) 
 	{
 		return ADODB_SetDatabaseAdapter($db);
-	}
-	
-	// php4 constructor
-	function ADODB_Active_Record($table = false, $pkeyarr=false, $db=false)
-	{
-		ADODB_Active_Record::__construct($table,$pkeyarr,$db);
 	}
 	
 	// php5 constructor
@@ -340,9 +334,10 @@ class ADODB_Active_Record {
 			return false;
 		}
 		
+		$keys = array_keys($row);
 		$cnt = 0;
 		foreach($table->flds as $name=>$fld) {
-			$this->$name = $row[$cnt];
+			$this->$name = $row[$keys[$cnt]];
 			$cnt += 1;
 		}
 		$this->_original = $row;

@@ -14,7 +14,7 @@
 /**
 	\mainpage 	
 	
-	 @version V5.00 05 Feb 2007   (c) 2000-2007 John Lim (jlim#natsoft.com.my). All rights reserved.
+	 @version V5.02 24 Sept 2007   (c) 2000-2007 John Lim (jlim#natsoft.com.my). All rights reserved.
 
 	Released under both BSD license and Lesser GPL library license. You can choose which license
 	you prefer.
@@ -169,7 +169,7 @@
 		/**
 		 * ADODB version as a string.
 		 */
-		$ADODB_vers = 'V5.00 05 Feb 2007  (c) 2000-2007 John Lim (jlim#natsoft.com.my). All rights reserved. Released BSD & LGPL.';
+		$ADODB_vers = 'V5.02 24 Sept 2007  (c) 2000-2007 John Lim (jlim#natsoft.com.my). All rights reserved. Released BSD & LGPL.';
 	
 		/**
 		 * Determines whether recordset->RecordCount() is used. 
@@ -333,7 +333,7 @@
 		die('Virtual Class -- cannot instantiate');
 	}
 	
-	function Version()
+	static function Version()
 	{
 	global $ADODB_vers;
 	
@@ -499,6 +499,15 @@
 		return $ret;
 	}
 
+	function outp_throw($msg,$src='WARN',$sql='')
+	{
+		if (defined('ADODB_ERROR_HANDLER') &&  ADODB_ERROR_HANDLER == 'adodb_throw') {
+			adodb_throw($this->databaseType,$src,-9999,$msg,$sql,false,$this);
+			return;
+		} 
+		ADOConnection::outp($msg);
+	}
+	
 	// Format date column in sql string given an input format that understands Y M D
 	function SQLDate($fmt, $col=false)
 	{	
@@ -525,7 +534,7 @@
 	{
 		return $sql;
 	}
-	
+
 	/**
 	 * Some databases, eg. mssql require a different function for preparing
 	 * stored procedures. So we cannot use Prepare().
@@ -544,7 +553,7 @@
 	{
 		return $this->Prepare($sql,$param);
 	}
-	
+
 	/**
 	* PEAR DB Compat
 	*/
@@ -858,9 +867,9 @@
 					}
 					if (isset($sqlarr[$i])) {
 						$sql .= $sqlarr[$i];
-						if ($i+1 != sizeof($sqlarr)) ADOConnection::outp( "Input Array does not match ?: ".htmlspecialchars($sql));
+						if ($i+1 != sizeof($sqlarr)) $this->outp_throw( "Input Array does not match ?: ".htmlspecialchars($sql),'Execute');
 					} else if ($i != sizeof($sqlarr))	
-						ADOConnection::outp( "Input array does not match ?: ".htmlspecialchars($sql));
+						$this->outp_throw( "Input array does not match ?: ".htmlspecialchars($sql),'Execute');
 		
 					$ret = $this->_Execute($sql);
 					if (!$ret) return $ret;
@@ -913,7 +922,9 @@
 		} 
 		
 		if ($this->_queryID === true) { // return simplified recordset for inserts/updates/deletes with lower overhead
-			$rs = new ADORecordSet_empty();
+			$rsclass = $this->rsPrefix.'empty';
+			$rs = (class_exists($rsclass)) ? new $rsclass():  new ADORecordSet_empty();
+			
 			return $rs;
 		}
 		
@@ -1296,7 +1307,9 @@
 		$ret = false;
 		$rs = $this->Execute($sql,$inputarr);
 		if ($rs) {	
-			if (!$rs->EOF) $ret = reset($rs->fields);
+			if ($rs->EOF) $ret = null;
+			else $ret = reset($rs->fields);
+			
 			$rs->Close();
 		}
 		$ADODB_COUNTRECS = $crecs;
@@ -1307,8 +1320,9 @@
 	{
 		$ret = false;
 		$rs = $this->CacheExecute($secs2cache,$sql,$inputarr);
-		if ($rs) {		
-			if (!$rs->EOF) $ret = reset($rs->fields);
+		if ($rs) {
+			if ($rs->EOF) $ret = null;
+			else $ret = reset($rs->fields);
 			$rs->Close();
 		} 
 		
@@ -1436,7 +1450,12 @@
 		return $arr;
 	}
 	
-	
+	function GetRandRow($sql, $arr= false)
+	{
+		$rezarr = $this->GetAll($sql, $arr);
+		$sz = sizeof($rez);
+		return $rezarr[abs(rand()) % $sz];
+	}
 	
 	/**
 	* Return one row of sql statement. Recordset is disposed for you.
@@ -1532,7 +1551,7 @@
 									  // sql,	nrows, offset,inputarr
 			$rs = $this->SelectLimit($secs2cache,$sql,$nrows,$offset,$this->cacheSecs);
 		} else {
-			if ($sql === false) ADOConnection::outp( "Warning: \$sql missing from CacheSelectLimit()");
+			if ($sql === false) $this->outp_throw("Warning: \$sql missing from CacheSelectLimit()",'CacheSelectLimit');
 			$rs = $this->SelectLimit($sql,$nrows,$offset,$inputarr,$secs2cache);
 		}
 		return $rs;
@@ -1813,7 +1832,7 @@
 		$sql = 'SELECT * FROM '.$table;  
 		if ($where!==FALSE) $sql .= ' WHERE '.$where;
 		else if ($mode == 'UPDATE' || $mode == 2 /* DB_AUTOQUERY_UPDATE */) {
-			ADOConnection::outp('AutoExecute: Illegal mode=UPDATE with empty WHERE clause');
+			$this->outp_throw('AutoExecute: Illegal mode=UPDATE with empty WHERE clause','AutoExecute');
 			return $false;
 		}
 
@@ -1831,7 +1850,7 @@
 			$sql = $this->GetInsertSQL($rs, $fields_values, $magicq);
 			break;
 		default:
-			ADOConnection::outp("AutoExecute: Unknown mode=$mode");
+			$this->outp_throw("AutoExecute: Unknown mode=$mode",'AutoExecute');
 			return $false;
 		}
 		$ret = false;
@@ -2056,7 +2075,7 @@
 			include(ADODB_DIR.'/adodb-active-record.inc.php');
 		}	
 		if (!class_exists($class)) {
-			ADOConnection::outp("Unknown class $class in GetActiveRcordsClass()");
+			$this->outp_throw("Unknown class $class in GetActiveRecordsClass()",'GetActiveRecordsClass');
 			return $false;
 		}
 		$arr = array();
