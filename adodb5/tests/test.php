@@ -911,8 +911,9 @@ END Adodb;
 	$rs = $db->SelectLimit('select id,firstname from ADOXYZ order by id',1);
 	if ($rs && !$rs->EOF) {
 		$arr = $rs->GetRowAssoc();
-		if ($arr[$id] != 1) {Err("Error 1");print_r($arr);};
-		if (trim($arr[$fname]) != 'Caroline') {Err("Error 2"); print_r($arr);};
+		
+		if ($arr[strtoupper($id)] != 1) {Err("Error 1");print_r($arr);};
+		if (trim($arr[strtoupper($fname)]) != 'Caroline') {Err("Error 2"); print_r($arr);};
 		$rs->MoveNext();
 		if (!$rs->EOF) Err("Error EOF");
 
@@ -1181,12 +1182,12 @@ END Adodb;
 	$ADODB_FETCH_MODE = ADODB_FETCH_NUM;
 	$rs = $db->CacheExecute(6,"select distinct firstname,lastname from ADOXYZ");
 	print_r($rs->fields); echo $rs->fetchMode;echo "<br>";
-	echo $rs->Fields('firstname');
+	echo $rs->Fields($fname);
 	
 	$ADODB_FETCH_MODE = ADODB_FETCH_ASSOC;
 	$rs = $db->CacheExecute(6,"select distinct firstname,lastname from ADOXYZ");
 	print_r($rs->fields);echo "<br>";
-	echo $rs->Fields('firstname');
+	echo $rs->Fields($fname);
 	$db->debug = false;
 	
 	$ADODB_FETCH_MODE = ADODB_FETCH_NUM;
