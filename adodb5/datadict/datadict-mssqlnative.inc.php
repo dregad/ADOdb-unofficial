@@ -41,8 +41,8 @@ In ADOdb, named quotes for MS SQL Server use ". From the MSSQL Docs:
 // security - hide paths
 if (!defined('ADODB_DIR')) die();
 
-class ADODB2_mssql extends ADODB_DataDict {
-	var $databaseType = 'mssql';
+class ADODB2_mssqlnative extends ADODB_DataDict {
+	var $databaseType = 'mssqlnative';
 	var $dropIndex = 'DROP INDEX %2$s.%1$s';
 	var $renameTable = "EXEC sp_rename '%s','%s'";
 	var $renameColumn = "EXEC sp_rename '%s.%s','%s'";
@@ -69,7 +69,7 @@ class ADODB2_mssql extends ADODB_DataDict {
 		case 'TINYINT': return  'I1';
 		case 'SMALLINT': return 'I2';
 		case 'BIGINT':  return  'I8';
-		case 'SMALLDATETIME': return 'T';
+		
 		case 'REAL':
 		case 'FLOAT': return 'F';
 		default: return parent::MetaType($t,$len,$fieldobj);
