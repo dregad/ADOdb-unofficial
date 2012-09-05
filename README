@@ -12,3 +12,13 @@ http://adodb.sourceforge.net/
 
 This is an unofficial repository of the php5 version.
 
+
+
+Follow the instructions below to add a new release to the repository
+
+ - download the tarball from sourceforge
+ - save the file in your preferred location (e.g. /tmp
+ - run the script tarball-to-git.sh
+   if file was not saved in /tmp, specify its location on command-line
+
+A new commit and tag will be added
