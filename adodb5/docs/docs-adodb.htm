@@ -2432,6 +2432,27 @@ NewADOConnection($name) to create a connection object for that database. </p>
   <p class=MsoNormal><span style='font-size:10.0pt'>Unix and Windows. </span></p>
   </td>
  </tr>
+  <tr style='mso-yfti-irow:35'>
+  <td valign=top style='padding:.75pt .75pt .75pt .75pt'>
+  <p class=MsoNormal><b><span style='font-size:10.0pt'>postgres9</span></b></p>
+  </td>
+  <td valign=top style='padding:.75pt .75pt .75pt .75pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt'>A</span></p>
+  </td>
+  <td valign=top style='padding:.75pt .75pt .75pt .75pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt'>PostgreSQL which supports
+  version 9 functionality.</span></p>
+  </td>
+  <td valign=top style='padding:.75pt .75pt .75pt .75pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt'>Y</span></p>
+  </td>
+  <td valign=top style='padding:.75pt .75pt .75pt .75pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt'>PostgreSQL client</span></p>
+  </td>
+  <td valign=top style='padding:.75pt .75pt .75pt .75pt'>
+  <p class=MsoNormal><span style='font-size:10.0pt'>Unix and Windows. </span></p>
+  </td>
+ </tr>
  <tr style='mso-yfti-irow:36'>
   <td valign=top style='padding:.75pt .75pt .75pt .75pt'>
   <p class=MsoNormal><b><span style='font-size:10.0pt'>sapdb</span></b></p>
@@ -6148,10 +6169,24 @@ href="http://phplens.com/lens/php-book/optimizing-debugging-php.php">Optimizing
 PHP</a>. </p>
 
 <h2>Change Log<a name=changes></a><a name=changelog></a></h2>
-<p><a name=5.17><b>5.17</b>
-<p>Removed trailing whitespace from adodb-active-record.inc.php.
-<p>odbc: Added support for $database parameter in odbc Connect() function. E.g. $DB->Connect($dsn_without_db, $user, $pwd, $database). Last time
-$database had to be left blank and the $dsn was used to pass in this parameter.
+<p><a name=5.18><b>5.18 3 Sep 2012</b>
+<p>datadict-postgres: Fixes bug in ALTER COL. See http://phplens.com/lens/lensforum/msgs.php?id=19202. Also fixed bugs in MetaType() checking $fieldobj properties.
+<p>GetRowAssoc did not work with null values. Bug in 5.17.
+<p>postgres9:  New driver to better support PostgreSQL 9. Thx Glenn Herteg and Cacti team.
+<p>sqlite3: Modified to support php 5.4. Thx Günter Weber [built.development#googlemail.com]
+<p>adodb: When fetch mode is ADODB_FETCH_ASSOC, and we execute $db->GetAssoc("select 'a','0'"); we get an error. Fixed. See http://phplens.com/lens/lensforum/msgs.php?id=19190
+<p>adodb: Caching directory permissions now configurable using global variable
+$ADODB_CACHE_PERMS. Default value is 0771.
+<p>mysqli: SetCharSet() did not return true (success) or false (fail) correctly. Fixed.
+<p>mysqli: changed dataProvider to 'mysql' so that MetaError and other shared functions will work.
+<p>mssqlnative: Prepare() did not work previously. Now calling Prepare() will work but the sql is not actually compiled. Unfortunately bind params are passed to sqlsrv_prepare  and not to sqlsrv_execute.
+make Prepare() and empty function, and we still execute the unprepared stmt.
+<p>mysql: FetchField(-1), turns it is is not possible to retrieve the max_length. Set to -1.
+<p>mysql-perf: Fixed "SHOW INNODB STATUS". Change to "SHOW ENGINE INNODB STATUS"
+<p><a name=5.17><b>5.17 18 May 2012</b>
+<p>Active Record: Removed trailing whitespace from adodb-active-record.inc.php.
+<p>odbc: Added support for $database parameter in odbc Connect() function. E.g. $DB->Connect($dsn_without_db, $user, $pwd, $database). 
+Previously $database had to be left blank and the $dsn was used to pass in this parameter.
 <p>oci8: Added better empty($rs) error handling to metaindexes().
 <p>oci8: Changed to use newer oci API to support PHP 5.4.
 <p>adodb.inc.php: Changed GetRowAssoc to more generic code that will work in all scenarios.
