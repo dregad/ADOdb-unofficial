@@ -104,6 +104,9 @@
 		1 = assoc uppercase field names. $rs->fields['ORDERID']
 		2 = use native-case field names. $rs->fields['OrderID']
 	*/
+		define('ADODB_ASSOC_CASE_LOWER', 0);
+		define('ADODB_ASSOC_CASE_UPPER', 1);
+		define('ADODB_ASSOC_CASE_NATIVE', 2);
 	
 		define('ADODB_FETCH_DEFAULT',0);
 		define('ADODB_FETCH_NUM',1);
@@ -122,9 +125,6 @@
 			die("PHP5 or later required. You are running ".PHP_VERSION);
 	}
 	
-	
-	//if (!defined('ADODB_ASSOC_CASE')) define('ADODB_ASSOC_CASE',2);
-
 	
 	/**
 	 	Accepts $src and $dest arrays, replacing string $data
@@ -3483,13 +3483,31 @@ http://www.stanford.edu/dept/itss/docs/oracle/10g/server.101/b10759/statements_1
 		return $this->fields[$colname];
 	}
 	
-	function GetAssocKeys($upper=true)
+	/**
+	 * Builds the bind array associating keys to recordset fields
+	 *
+	 * @param int $upper Case for the array keys, defaults to uppercase
+	 *                   (see ADODB_ASSOC_CASE_xxx constants)
+	 */
+	function GetAssocKeys($upper=ADODB_ASSOC_CASE_UPPER)
 	{
 		$this->bind = array();
 		for ($i=0; $i < $this->_numOfFields; $i++) {
 			$o = $this->FetchField($i);
-			if ($upper === 2) $this->bind[$o->name] = $i;
-			else $this->bind[($upper) ? strtoupper($o->name) : strtolower($o->name)] = $i;
+			switch($upper) {
+				case ADODB_ASSOC_CASE_LOWER:
+					$key = strtolower($o->name);
+					break;
+				case ADODB_ASSOC_CASE_UPPER:
+					$key = strtoupper($o->name);
+					break;
+				case ADODB_ASSOC_CASE_NATIVE:
+				default:
+					$key = $o->name;
+					break;
+			}
+			$val = $this->fetchMode == ADODB_FETCH_ASSOC ? $o->name : $i;
+			$this->bind[$key] = $val;
 		}
 	}
 	
